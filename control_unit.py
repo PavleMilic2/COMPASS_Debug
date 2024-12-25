@@ -5,7 +5,7 @@ import numpy as nmp
 
 # DATA
 dpg.create_context()
-dpg.create_viewport(width=1920, height=900)
+dpg.create_viewport(width=1920, height=780)
 dpg.setup_dearpygui()
 
 # NE DIRATI - FIKSNE VREDNOSTI ZA PRETVARANJE METARA U PIKSELE
@@ -168,7 +168,7 @@ def add_log(message):
 
 
 # GRAFIČKI DEO
-with dpg.window(label="Control Unit", width=800, height=700):
+with dpg.window(label="Control Unit", width=800, height=735):
     dpg.add_button(label="Start Autonomy", callback=autonomy_start)
     dpg.add_button(label="Start Coordinatization")
     dpg.add_button(label="Start Testing Module")
@@ -205,7 +205,7 @@ def draw_rover(x_val, y_val, rov_w, rov_l):
 
 with dpg.window(label="Map", pos=(800,0)):
 
-    with dpg.drawlist(width=1100, height=700):
+    with dpg.drawlist(width=1090, height=700,tag="drawlist_tag"):
         
         dpg.draw_image("texture_map_tag", (0, 0), (1100, 177*4), uv_min=(0, 0), uv_max=(1, 1))
         dpg.draw_image("texture_depth_tag", (0, 0), (1100, 177*4), tag="depth-map",  uv_min=(0, 0), uv_max=(1, 1), color=(255,255,255,0))
@@ -244,6 +244,50 @@ with dpg.window(label="Map", pos=(800,0)):
         dpg.draw_line([x,y], currentWCoord, color=(60,60,255,150), tag="goalDistanceLine", thickness=2)
 
         dpg.draw_polyline(path.tolist(), color=(0,20,255), thickness=2)
+
+main_viewport_width=1920
+main_viewport_heigth=780
+
+conrol_unit_width=800
+control_unit_heigth=735
+control_unit_width_precentage=800/1920
+control_unit_ratio=800/735
+
+map_width=1090
+map_height=700
+map_width_precentage=1090/1920
+map_ratio=1090/700
+
+map_image_width=1100
+map_image_heigth=177*4
+map_image_precetage=1100/1920
+map_image_ratio=1100/(177*4)
+
+def resize_content(sender, app_data):
+    viewport_width = dpg.get_viewport_client_width()
+
+     #with dpg.window(label="Map", pos=(800,0)):
+     #dpg.window(label="Control Unit", width=800, height=735):
+     #with dpg.drawlist(width=1090, height=700):
+
+    new_control_unit_width=int(viewport_width*control_unit_width_precentage)
+    new_map_width=int(viewport_width*map_width_precentage)
+
+    dpg.set_item_width("Control Unit",int(new_control_unit_width))
+    dpg.set_item_height("Control Unit",int(new_control_unit_width/control_unit_ratio))
+    dpg.set_item_pos("Map", (int(new_control_unit_width),0))
+    dpg.set_item_width("drawlist_tag",int(new_map_width))
+    dpg.set_item_height("drawlist_tag",int(new_map_width/control_unit_ratio))
+
+    #dpg.draw_image("texture_map_tag", (0, 0), (1100, 177*4), uv_min=(0, 0), uv_max=(1, 1))
+    #dpg.draw_image("texture_depth_tag", (0, 0), (1100, 177*4), tag="depth-map",  uv_min=(0, 0), uv_max=(1, 1), color=(255,255,255,0))
+
+    new_map_image_width=int(viewport_width*map_image_precetage)
+
+    dpg.set_item_size("texture_map_tag", (new_map_image_width, int(new_map_image_width/map_image_ratio)))
+    dpg.set_item_size("texture_depth_tag", (new_map_image_width, int(new_map_image_width/map_image_ratio)))
+
+dpg.set_viewport_resize_callback(resize_content)
 
 # METODA ZA PONOVNO ISCRTAVANJE NA MAPI
 def moveRover(sender, app_data, user_data):
