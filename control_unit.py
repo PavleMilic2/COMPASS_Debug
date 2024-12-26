@@ -210,7 +210,7 @@ def create_log_console():
     dpg.bind_item_theme("log_console", log_console_theme)
 
 # Main control unit window
-with dpg.window(label="Control Unit", width=800, height=735):
+with dpg.window(label="Control Unit", width=800, height=735,tag="control_unit_tag"):
     create_control_buttons()
     create_visibility_checkboxes()
     create_position_display()
@@ -266,7 +266,7 @@ def draw_points():
             dpg.draw_text([coord[0] + 10, coord[1] - 30], f"{i+1}", size=20, color=(0,255,0))
 
 
-with dpg.window(label="Map", pos=(800,0)):
+with dpg.window(label="Map", pos=(800,0),tag="map_tag"):
 
     with dpg.drawlist(width=1090, height=700,tag="drawlist_tag"):
 
@@ -302,17 +302,21 @@ map_image_ratio=1100/(177*4)
 # Promena velicine glavnog prozora i skaliranje njegove dece
 def resize_content(sender, app_data):
     viewport_width = dpg.get_viewport_client_width()
+    viewport_height= dpg.get_viewport_client_height()
 
     new_control_unit_width=int(viewport_width*control_unit_width_precentage)
     new_map_width=int(viewport_width*map_width_precentage)
 
-    dpg.set_item_width("Control Unit",int(new_control_unit_width))
-    dpg.set_item_height("Control Unit",int(new_control_unit_width/control_unit_ratio))
-    dpg.set_item_pos("Map", (int(new_control_unit_width),0))
+    dpg.set_item_width("control_unit_tag",int(new_control_unit_width))
+    dpg.set_item_height("control_unit_tag",int(viewport_height))
+    dpg.set_item_pos("map_tag", (int(new_control_unit_width),0))
     dpg.set_item_width("drawlist_tag",int(new_map_width))
-    dpg.set_item_height("drawlist_tag",int(new_map_width/control_unit_ratio))
+    dpg.set_item_height("drawlist_tag",int(viewport_height))
 
     new_map_image_width=int(viewport_width*map_image_precetage)
+
+    #dpg.draw_image("texture_map_tag", (0, 0), (1100, 177*4), uv_min=(0, 0), uv_max=(1, 1))
+    #dpg.draw_image("texture_depth_tag", (0, 0), (1100, 177*4), tag="depth-map",  uv_min=(0, 0), uv_max=(1, 1), color=(255,255,255,0))
 
     dpg.set_item_size("texture_map_tag", (new_map_image_width, int(new_map_image_width/map_image_ratio)))
     dpg.set_item_size("texture_depth_tag", (new_map_image_width, int(new_map_image_width/map_image_ratio)))
