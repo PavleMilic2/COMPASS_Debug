@@ -1,6 +1,7 @@
 import dearpygui.dearpygui as dpg
 from math import *
 import datetime
+import pygame
 import numpy as nmp
 
 # DATA
@@ -87,6 +88,17 @@ pathfinding_flag = False
 
 w, h, channels, data = dpg.load_image(file="depth_map2.png")
 w2, h2, channels2, data2 = dpg.load_image(file="terrain_map.png")
+
+#Gamepad implementacija
+pygame.init()
+pygame.joystick.init()
+if pygame.joystick.get_count() > 0:
+    joystick = pygame.joystick.Joystick(0)
+    joystick.init()
+    print(f"Joystick initialized: {joystick.get_name()}")
+else:
+    joystick=None
+    print("No joystick detected")
 
 
 
@@ -324,12 +336,16 @@ def resize_content(sender, app_data):
 dpg.set_viewport_resize_callback(resize_content)
 
 # METODA ZA PONOVNO ISCRTAVANJE NA MAPI
-def moveRover(sender, app_data, user_data):
+def moveRover(sender, app_data, user_data,intensity):
     global x, y, r
+
+    if intensity==None:
+        intensity=0.4
+    
     #print(f"{x}, {y}, {r} - before")
-    Dx = cos(radians(r-90))*0.4
+    Dx = cos(radians(r-90))*intensity
     x -= Dx
-    Dy = sin(radians(r-90))*0.4
+    Dy = sin(radians(r-90))*intensity
     y += Dy
     dpg.configure_item("rover_poly", points=draw_rover(x,y,rover_w, rover_l))
     dpg.configure_item("rover_arrow", p2=(x,y), p1=(x, y-40))
@@ -346,13 +362,17 @@ def moveRover(sender, app_data, user_data):
 
 
 # [ DEBUGING FUNKCIJE ]
-def steerRoverL(sender, app_data, user_data):
+def steerRoverL(sender, app_data, user_data,intensity):
+    if intensity==None:
+        intensity=0.4
     global r
-    r += 0.4
+    r += intensity
 
-def steerRoverR(sender, app_data, user_data):
+def steerRoverR(sender, app_data, user_data,intensity):
+    if intensity==None:
+        intensity=0.4
     global r
-    r -= 0.4
+    r -= intensity
 
 def steerMastL(sender, app_data, user_data):
     global mast_r
@@ -374,7 +394,32 @@ with dpg.handler_registry():
 dpg.show_viewport()
 while dpg.is_dearpygui_running():
     updateValues()
+
+    if joystick:
+        pygame.event.pump()  # Process events so joystick input is updated
+        axis0 = joystick.get_axis(0)  #leva pecurka (left-right)
+        axis1 = joystick.get_axis(1)  # (up-down)
+        axis2 = joystick.get_axis(2)  #desna pecurka
+        axis3 = joystick.get_axis(3)
+        DpadLR,DpadUD = joystick.get_hat(0)  # tapl,prvi je levo(-) desno(+) drugi je gore dole,
         
+
+        if axis2>0:
+            steerRoverR(None,None,None,axis2*0.4)
+
+        else:
+            steerRoverL(None,None,None,abs(axis2)*0.4)
+    
+        if axis1<-0.01:
+            moveRover(None,None,None,abs(axis1*0.4))
+
+        if DpadLR != 0:
+            if DpadLR>0:
+                steerMastR(None,None,None)
+            else:
+                steerMastL(None,None,None)
+        
+    
     #r = dpg.get_value("rotation_knob")
     #mast_r = dpg.get_value("mast_rotation_knob")
     #print(f"{x}, {y}, {r} - DURING")
@@ -383,3 +428,4 @@ while dpg.is_dearpygui_running():
     dpg.apply_transform("mast_node", dpg.create_translation_matrix([x,y]) * dpg.create_rotation_matrix(pi*mast_r/180, [0,0,-1]) * dpg.create_translation_matrix([-x,-y]))
     dpg.render_dearpygui_frame()
 dpg.destroy_context()
+pygame.quit()
