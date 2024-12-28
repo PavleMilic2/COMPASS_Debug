@@ -389,12 +389,7 @@ with dpg.handler_registry():
     dpg.add_key_down_handler(key=dpg.mvKey_Q, callback=steerMastL)
     dpg.add_key_down_handler(key=dpg.mvKey_E, callback=steerMastR)
 
-
-# POKRETANJE GLAVNOG PROGRAMA
-dpg.show_viewport()
-while dpg.is_dearpygui_running():
-    updateValues()
-
+def gamepad_input():
     if joystick:
         pygame.event.pump()  # Process events so joystick input is updated
         axis0 = joystick.get_axis(0)  #leva pecurka (left-right)
@@ -418,7 +413,14 @@ while dpg.is_dearpygui_running():
                 steerMastR(None,None,None)
             else:
                 steerMastL(None,None,None)
-        
+
+
+# POKRETANJE GLAVNOG PROGRAMA
+dpg.show_viewport()
+while dpg.is_dearpygui_running():
+    gamepad_input() 
+    updateValues()
+    
     
     #r = dpg.get_value("rotation_knob")
     #mast_r = dpg.get_value("mast_rotation_knob")
